@@ -4,92 +4,78 @@
 % variable: GW double output
 % variable: BL double output
 
+clc
+clear
 
-%% EC135 Parameters
-EW_base = 3208;
-GW_base = 6415;
-Vtip_base = 41.364*16.75;
+n = 3;
+c = 0.5;
+R_base = 4.5; 
+
+% Constants 
+GW_base = 600*2.2046;
 A_base = pi*R_base^2;
-MCP_base = 1122;
-DL = GW_base/A_base;
-% Initial Scaling
-W_engine_base = engine_weight(MCP_base);
-W_drive_base = drive_system_weight(GW_base, MCP_base, DL);
 
-% Constants
-phi_struct = (EW_base - W_engine_base - W_drive_base) / GW_base;
-ec135.Cd_o = 0.00712; % Cd
-ec135.k = 1.15;
-ec135.DL = DL;
-ec135.sigma = n*c/(pi*R_base);
-ec135.Vtip = Vtip_base;
+coax.DL = GW_base/(A_base*2);
+coax.sigma = 2*n*c/(pi*R_base);
+coax.Vtip = 685;
+coax.tail_frac = 0;
 
-%% Mission Parameters
-sfc_base = 0.4;
-total_payload = 400 + 1600 + 350;
+single.DL = GW_base/(A_base);
+single.sigma = n*c/(pi*R_base);
+single.Vtip = 685;
+single.tail_frac = 0.05;
 
-%% Scaling
-GW = 5400;
+[Rf_avail, MCP] = rf_method(coax);
+fprintf('Coax\n')
+fprintf('Rf Avail: %.2f\n', Rf_avail);
+fprintf('P Avail: %.2f\n', MCP);
 
-Rf_avail = 0;
-Rf_req = inf;
+[Rf_avail, MCP] = rf_method(single);
+fprintf('\nSingle\n')
+fprintf('Rf Avail: %.2f\n', Rf_avail);
+fprintf('P Avail: %.2f\n', MCP);
 
-epsilon = 1e-5;
-while (abs(Rf_req - Rf_avail) > epsilon)
-    W = GW;
+function [Rf_avail, MCP] = rf_method(rotor)
+
+    %% EC135 Parameters
+    EW_base = 400*2.2046;
+    GW_base = 600*2.2046;
+    MCP_base = 430;
+
+    % Initial Scaling
+    W_engine_base = engine_weight(MCP_base);
+    W_drive_base = drive_system_weight(GW_base, MCP_base, rotor.DL);
+    phi_struct = (EW_base - W_engine_base - W_drive_base) / GW_base;
+
+
+    %% Mission Parameters
+    sfc_base = 0.4;
+    total_payload = 100*2.2046;
+
+    %% Scaling
+    GW = 600*2.2046;
 
     %% Performance Requirements
-    req1 = struct('V', 0, 'V_c', 0, 't', 0, 'h', 13000, 'W', .75*W);
-    req2 = struct('V', 0, 'V_c', 0, 't', 0, 'h', 11000, 'W', .90*W);
-    req3 = struct('V', 0, 'V_c', 900/60, 't', 0, 'h', 0, 'W', .75*W);
-    req4 = struct('V', 165*1.68, 'V_c', 0, 't', 0, 'h', 0, 'W', .8*W);
-    req5 = struct('V', 0, 'V_c', 0, 't', 0, 'h', 0, 'W', .8*W);
-
-    [~, ~, P1_sl] = phase_calc(GW, req1.W, 0, ec135, req1);
-    [~, ~, P2_sl] = phase_calc(GW, req2.W, 0, ec135, req2);
-    [~, ~, P3_sl] = phase_calc(GW, req3.W, 0, ec135, req3);
-    [~, ~, P4_sl] = phase_calc(GW, req4.W, 0, ec135, req4);
-
-    P5_req = inf;
-    for V=110:150
-        req5.V = V;
-        [~, ~, P5_req_sl] = phase_calc(GW, req5.W, 0, ec135, req5);
-        P5_req = min(P5_req, P5_req_sl);
-    end
-    P5_sl = GW*(1300/60)/550 + P5_req;
-
-    MCP = max([P1_sl; P2_sl; P3_sl; P4_sl; P5_sl]);
+    req1 = struct('V', 0, 'V_c', 0, 't', 0, 'h', 13000, 'W', GW);
+    [~, ~, P1_sl] = phase_calc(GW, req1.W, 0, rotor, req1);
+    MCP = P1_sl;
 
     %% Engine Selection
     W_engine = engine_weight(MCP);
-    W_drive = drive_system_weight(GW, MCP, DL);
+    W_drive = drive_system_weight(GW, MCP, rotor.DL);
     Rf_avail = 1-phi_struct-total_payload./GW-(W_engine+W_drive)./GW; 
     gamma = MCP./MCP_base;
     sfc = sfc_base * (-.00932*gamma.^2+.865*gamma+.445)./(gamma+.301);
 
-    %% Mission Phases
-    mission(1) = struct('V', 0, 'V_c', 0, 't', 20*60, 'h', 0);
-    mission(2) = struct('V', 65*1.68, 'V_c', 350/60, 't', 7500/(350/60), 'h', 7500/2);
-    mission(3) = struct('V', 118*1.68, 'V_c', 0, 't', 3600*300/118, 'h', 7500);
-    mission(4) = struct('V', 0, 'V_c', 0, 't', 25*60, 'h', 0);
-    
-    Rf_req = 0;
-    for phase = mission 
-        F_req = phase_calc(GW, W, sfc, ec135, phase);
-        W = W - F_req;
-        Rf_req = Rf_req + F_req./GW;
-    end
-    
-    GW = GW + (Rf_req - Rf_avail)*GW;
+    % GW = GW + (Rf_req - Rf_avail)*GW;
+    BL = GW/(density(0)*GW/rotor.DL*rotor.Vtip^2)/rotor.sigma;
 end
-
-BL = GW/(density(0)*GW/DL*ec135.Vtip^2)/ec135.sigma;
 
 %% Helper Functions
 function [F_req, P_req, P_req_sl] = phase_calc(GW, W, sfc, rotor, phase)
     
-    Cd_o = rotor.Cd_o;
-    k = rotor.k;
+    Cd_o = 0.008;
+    k = 1.15;
     DL = rotor.DL;
     sigma = rotor.sigma;
     Vtip = rotor.Vtip;
@@ -115,7 +101,7 @@ function [F_req, P_req, P_req_sl] = phase_calc(GW, W, sfc, rotor, phase)
     Cp_o = sigma*Cd_o/8*(1+4.65*mu.^2);
     Cp_p = .5*f.*(mu.^3)./A;
     Cp = Cp_i + Cp_o + Cp_p;
-    Cp_tail = .05*Cp;
+    Cp_tail = Cp * rotor.tail_frac;
     
     P_req = (Cp+Cp_tail).*(rho*A*(Vtip)^3)/550; % in HP
     P_req_sl = P_req*density(0)/rho;
