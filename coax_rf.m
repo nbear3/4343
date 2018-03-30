@@ -7,7 +7,7 @@
 clc
 clear
 
-n = 3;
+n = 2; % per rotor
 c = 0.5;
 R_base = 4.5; 
 
@@ -18,57 +18,54 @@ A_base = pi*R_base^2;
 coax.DL = GW_base/(A_base*2);
 coax.sigma = 2*n*c/(pi*R_base);
 coax.Vtip = 685;
-coax.tail_frac = 0;
+coax.losses = 0.1;
 
-single.DL = GW_base/(A_base);
-single.sigma = n*c/(pi*R_base);
-single.Vtip = 685;
-single.tail_frac = 0.05;
-
-[Rf_avail, MCP] = rf_method(coax);
+[t, MCP] = hover_time(coax);
 fprintf('Coax\n')
-fprintf('Rf Avail: %.2f\n', Rf_avail);
-fprintf('P Avail: %.2f\n', MCP);
+fprintf('Hover Time 50%%:   %.2f s\n', t);
+fprintf('P Required:        %.2f HP\n', MCP);
 
-[Rf_avail, MCP] = rf_method(single);
-fprintf('\nSingle\n')
-fprintf('Rf Avail: %.2f\n', Rf_avail);
-fprintf('P Avail: %.2f\n', MCP);
+function [t, MCP] = hover_time(rotor)
 
-function [Rf_avail, MCP] = rf_method(rotor)
-
-    %% EC135 Parameters
-    EW_base = 400*2.2046;
-    GW_base = 600*2.2046;
+    % Parameters
+    EW = 400*2.2046;
+    GW = 600*2.2046;
+    sfc_base = 0.4;
     MCP_base = 430;
 
     % Initial Scaling
     W_engine_base = engine_weight(MCP_base);
-    W_drive_base = drive_system_weight(GW_base, MCP_base, rotor.DL);
-    phi_struct = (EW_base - W_engine_base - W_drive_base) / GW_base;
+    W_drive_base = drive_system_weight(GW, MCP_base, rotor.DL);
+    phi_struct = (EW - W_engine_base - W_drive_base) / GW;
 
-
-    %% Mission Parameters
-    sfc_base = 0.4;
+    % Mission Parameters
     total_payload = 100*2.2046;
 
-    %% Scaling
-    GW = 600*2.2046;
-
-    %% Performance Requirements
-    req1 = struct('V', 0, 'V_c', 0, 't', 0, 'h', 13000, 'W', GW);
-    [~, ~, P1_sl] = phase_calc(GW, req1.W, 0, rotor, req1);
+    % Performance Requirements
+    time_step = .1;
+    hover = struct('V', 0, 'V_c', 0, 't', time_step, 'h', 3000*3.28, 'W', GW);
+    [~, ~, P1_sl] = phase_calc(GW, hover.W, 0, rotor, hover);
     MCP = P1_sl;
 
-    %% Engine Selection
+    % Engine Selection
     W_engine = engine_weight(MCP);
     W_drive = drive_system_weight(GW, MCP, rotor.DL);
     Rf_avail = 1-phi_struct-total_payload./GW-(W_engine+W_drive)./GW; 
     gamma = MCP./MCP_base;
     sfc = sfc_base * (-.00932*gamma.^2+.865*gamma+.445)./(gamma+.301);
 
-    % GW = GW + (Rf_req - Rf_avail)*GW;
     BL = GW/(density(0)*GW/rotor.DL*rotor.Vtip^2)/rotor.sigma;
+    
+    t = 0;
+    W = GW;    
+    Rf_50 = Rf_avail/2;
+    while Rf_avail > Rf_50
+        hover.W = W;
+        F_req = phase_calc(GW, W, sfc, rotor, hover);
+        W = W - F_req;
+        Rf_avail = Rf_avail - F_req/GW;
+        t = t + time_step;
+    end
 end
 
 %% Helper Functions
@@ -101,7 +98,7 @@ function [F_req, P_req, P_req_sl] = phase_calc(GW, W, sfc, rotor, phase)
     Cp_o = sigma*Cd_o/8*(1+4.65*mu.^2);
     Cp_p = .5*f.*(mu.^3)./A;
     Cp = Cp_i + Cp_o + Cp_p;
-    Cp_tail = Cp * rotor.tail_frac;
+    Cp_tail = Cp * rotor.losses;
     
     P_req = (Cp+Cp_tail).*(rho*A*(Vtip)^3)/550; % in HP
     P_req_sl = P_req*density(0)/rho;
