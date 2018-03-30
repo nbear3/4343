@@ -60,7 +60,6 @@ function [t, MCP] = hover_time(rotor)
     W = GW;    
     Rf_50 = Rf_avail/2;
     while Rf_avail > Rf_50
-        hover.W = W;
         F_req = phase_calc(GW, W, sfc, rotor, hover);
         W = W - F_req;
         Rf_avail = Rf_avail - F_req/GW;
