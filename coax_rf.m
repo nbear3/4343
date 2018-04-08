@@ -88,7 +88,7 @@ function [F_req, P_req, P_req_sl] = phase_calc(GW, W, sfc, rotor, phase)
     hours = phase.t/3600;
     
     Thrust = 0;
-    thr = 0;
+    thr = 15;
     while Thrust < W
         [Thrust, P_req, P_req_sl, FM] = CoaxBEMT(rotor, thr, phase.h, phase.V_c);
         thr = thr + .1;
