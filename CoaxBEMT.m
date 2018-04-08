@@ -26,9 +26,9 @@ airfoil = rotor.airfoil;
 %%Geometry Calculations for Both Rotors
 %Retrieve Airfoil Data
 num = xlsread(airfoil);
-aoa = num(9:end, 1); %Angle of Attack
-Cl = num(9:end, 2); %Coefficient of Lift
-Cd = num(9:end, 3); %Coefficient of Drag
+aoa = num(2:end, 1); %Angle of Attack
+Cl = num(2:end, 2); %Coefficient of Lift
+Cd = num(2:end, 3); %Coefficient of Drag
 
 %Attempts at Lift/Curve Slope Regression
 %Cla = (Cl(92) - Cl(73))/5
