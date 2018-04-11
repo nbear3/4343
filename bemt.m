@@ -1,4 +1,7 @@
 function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
+
+    sn = 10000; % number of sections
+
     %Thrust: Total Thrust Produced
     %Power: Total Power Required
     %FM: Figure of Merit
@@ -38,7 +41,7 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     a = polyfit(aoa(aoa<10 & aoa>-10), Cl(aoa<10 & aoa>-10), 1); % lift curve slope.
     Cla = a(1)*180/pi; %Lift/Curve Slope
 
-    rp = .01 : .01 : 1; % Radius Proportion
+    rp = linspace(1/sn, 1, sn); % Radius Proportion
     ru = R * rp; % Radius in Desired Units
 
     cr = 2 * c / (tr + 1); % Chord at Root
@@ -46,17 +49,17 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     c = cr - (cr - ct) * rp; % Chord along Span
 
     tht = thr - t; % Tip Incidence Angle
-    th = linspace(thr,tht,100);
+    th = linspace(thr,tht, sn);
 
     % Calculation of Elemental Reference Area
-    dA = zeros(1, 100);
-    dA(1) = .5 * (cr + c(1)) * .01 * R;
+    dA = zeros(1, sn);
+    dA(1) = .5 * (cr + c(1)) * 1/sn * R;
     for i = 1 : length(c) - 1
-        dA(i+1) = .5 * (c(i) + c(i+1)) *.01 * R;
+        dA(i+1) = .5 * (c(i) + c(i+1)) * 1/sn * R;
     end
 
     % Calculation of Elemental Disk Area
-    dDA = zeros(1,100);
+    dDA = zeros(1, sn);
     dDA(1) = pi * ru(1)^2;
     for i = 1 : length(ru) - 1
         dDA(i+1) = pi * (ru(i+1)^2 - ru(i)^2);
@@ -66,16 +69,15 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     sigma = dA ./ dDA; % Elemental Solidity
 
     % Change of Reference Radius for Center of Element
-    rp = rp - .005;
-    ru = ru - .005 * R;
+    rp = rp - .5/sn;
+    ru = ru - .5/sn * R;
 
     omega = OR / R; %Angular Velocity
     Or = omega * ru;
     
-    lamc = ones(1, 100) .* climb ./ OR; % Nondimensional Climb Velocity
+    lamc = ones(1, sn) .* climb ./ OR; % Nondimensional Climb Velocity
     lam = ((sigma.*Cla./16 - lamc./2).^2 + sigma.*Cla./8. ...
     .*(th*pi/180).*rp).^.5 - (sigma.*Cla./16 - lamc./2); % Nondimensional Inflow Velocity
-%     lami = lam - lamc; % Nondimensional Induced Velocity
     v = lam .* OR; % Induced Velocity
 
     phi = atand(v ./ Or); % Angle of Incoming Fluid
