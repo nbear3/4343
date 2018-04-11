@@ -1,166 +1,117 @@
-% variable: mean_chord double input
-% variable: theta_tr double input
-% variable: taper double input
-% variable: PL double output
-% variable: FM double output
+function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
+    %Thrust: Total Thrust Produced
+    %Power: Total Power Required
+    %FM: Figure of Merit
 
-airfoil = [-15.2500000000000,-0.880900000000000,0.134700000000000;-15,-0.902400000000000,0.124710000000000;-14.7500000000000,-0.936100000000000,0.113070000000000;-14.5000000000000,-0.968700000000000,0.102270000000000;-14.2500000000000,-1.00280000000000,0.0913500000000000;-14,-1.03860000000000,0.0799700000000000;-13.7500000000000,-1.07400000000000,0.0676700000000000;-13.5000000000000,-1.10210000000000,0.0552300000000000;-13.2500000000000,-1.12070000000000,0.0470000000000000;-13,-1.13380000000000,0.0419300000000000;-12.7500000000000,-1.14270000000000,0.0384800000000000;-12.5000000000000,-1.14830000000000,0.0358800000000000;-12.2500000000000,-1.14570000000000,0.0335900000000000;-12,-1.13800000000000,0.0315300000000000;-11.7500000000000,-1.12700000000000,0.0296700000000000;-11.5000000000000,-1.11330000000000,0.0279800000000000;-11.2500000000000,-1.09750000000000,0.0264400000000000;-11,-1.07990000000000,0.0250500000000000;-10.7500000000000,-1.06040000000000,0.0238500000000000;-10.5000000000000,-1.04290000000000,0.0222400000000000;-10.2500000000000,-1.02280000000000,0.0209500000000000;-10,-1.00060000000000,0.0199500000000000;-9.75000000000000,-0.977400000000000,0.0190500000000000;-9.50000000000000,-0.953800000000000,0.0181900000000000;-9.25000000000000,-0.929500000000000,0.0173900000000000;-9,-0.905300000000000,0.0165200000000000;-8.75000000000000,-0.880500000000000,0.0157200000000000;-8.50000000000000,-0.855700000000000,0.0149200000000000;-8.25000000000000,-0.829600000000000,0.0144300000000000;-8,-0.803100000000000,0.0140600000000000;-7.75000000000000,-0.776600000000000,0.0136800000000000;-7.50000000000000,-0.749800000000000,0.0133600000000000;-7.25000000000000,-0.723600000000000,0.0129100000000000;-7,-0.696800000000000,0.0126000000000000;-6.75000000000000,-0.670500000000000,0.0122100000000000;-6.50000000000000,-0.643900000000000,0.0119400000000000;-6.25000000000000,-0.617700000000000,0.0116200000000000;-6,-0.591300000000000,0.0115000000000000;-5.75000000000000,-0.566200000000000,0.0112700000000000;-5.50000000000000,-0.541400000000000,0.0111800000000000;-5.25000000000000,-0.517600000000000,0.0109800000000000;-5,-0.493900000000000,0.0108800000000000;-4.75000000000000,-0.471100000000000,0.0106100000000000;-4.50000000000000,-0.448300000000000,0.0104200000000000;-4.25000000000000,-0.425300000000000,0.0103100000000000;-4,-0.392400000000000,0.0100900000000000;-3.75000000000000,-0.354300000000000,0.00979000000000000;-3.50000000000000,-0.314500000000000,0.00961000000000000;-3.25000000000000,-0.271600000000000,0.00926000000000000;-3,-0.230600000000000,0.00898000000000000;-2.75000000000000,-0.196600000000000,0.00872000000000000;-2.50000000000000,-0.163900000000000,0.00841000000000000;-2.25000000000000,-0.136300000000000,0.00801000000000000;-2,-0.111500000000000,0.00756000000000000;-1.75000000000000,-0.0873000000000000,0.00707000000000000;-1.50000000000000,-0.0636000000000000,0.00656000000000000;-1.25000000000000,-0.0401000000000000,0.00618000000000000;-1,-0.0165000000000000,0.00595000000000000;-0.750000000000000,0.00710000000000000,0.00581000000000000;-0.500000000000000,0.0309000000000000,0.00573000000000000;-0.250000000000000,0.0556000000000000,0.00570000000000000;0,0.0795000000000000,0.00569000000000000;0.250000000000000,0.103400000000000,0.00573000000000000;0.500000000000000,0.127000000000000,0.00580000000000000;0.750000000000000,0.150900000000000,0.00589000000000000;1,0.174400000000000,0.00603000000000000;1.25000000000000,0.206000000000000,0.00621000000000000;1.50000000000000,0.246500000000000,0.00654000000000000;1.75000000000000,0.291000000000000,0.00696000000000000;2,0.329300000000000,0.00731000000000000;2.25000000000000,0.353600000000000,0.00753000000000000;2.75000000000000,0.402100000000000,0.00798000000000000;3,0.426500000000000,0.00822000000000000;3.25000000000000,0.451400000000000,0.00847000000000000;3.50000000000000,0.477000000000000,0.00874000000000000;3.75000000000000,0.503000000000000,0.00905000000000000;4,0.529600000000000,0.00935000000000000;4.25000000000000,0.556400000000000,0.00965000000000000;4.50000000000000,0.583500000000000,0.00994000000000000;4.75000000000000,0.610600000000000,0.0102300000000000;5,0.637600000000000,0.0105500000000000;5.25000000000000,0.665000000000000,0.0108100000000000;5.50000000000000,0.692000000000000,0.0111400000000000;5.75000000000000,0.719000000000000,0.0114900000000000;6,0.746300000000000,0.0117500000000000;6.25000000000000,0.773000000000000,0.0121300000000000;6.50000000000000,0.799300000000000,0.0125600000000000;6.75000000000000,0.826400000000000,0.0128500000000000;7,0.853200000000000,0.0131800000000000;7.25000000000000,0.879500000000000,0.0135800000000000;7.50000000000000,0.904700000000000,0.0141800000000000;7.75000000000000,0.932100000000000,0.0143200000000000;8,0.958900000000000,0.0145600000000000;8.25000000000000,0.984900000000000,0.0149200000000000;8.50000000000000,1.01000000000000,0.0154400000000000;8.75000000000000,1.03710000000000,0.0155800000000000;9,1.06380000000000,0.0157700000000000;9.25000000000000,1.08870000000000,0.0162200000000000;9.50000000000000,1.11550000000000,0.0163900000000000;9.75000000000000,1.14220000000000,0.0165400000000000;10,1.16820000000000,0.0168100000000000;10.2500000000000,1.18940000000000,0.0178300000000000;10.5000000000000,1.20810000000000,0.0192200000000000;10.7500000000000,1.22770000000000,0.0204100000000000;11,1.24840000000000,0.0213200000000000;11.2500000000000,1.26770000000000,0.0223700000000000;11.5000000000000,1.28490000000000,0.0235900000000000;11.7500000000000,1.29780000000000,0.0251900000000000;12,1.30920000000000,0.0267700000000000;12.2500000000000,1.32260000000000,0.0280200000000000;12.5000000000000,1.33340000000000,0.0294000000000000;12.7500000000000,1.33900000000000,0.0308800000000000;13,1.34090000000000,0.0325800000000000;13.2500000000000,1.34070000000000,0.0346200000000000;13.5000000000000,1.33820000000000,0.0371200000000000;13.7500000000000,1.33330000000000,0.0402400000000000;14,1.32620000000000,0.0441100000000000;14.2500000000000,1.31650000000000,0.0489600000000000;14.5000000000000,1.30390000000000,0.0550100000000000;14.7500000000000,1.28770000000000,0.0622800000000000;15,1.26790000000000,0.0704000000000000;15.2500000000000,1.24500000000000,0.0789000000000000;15.5000000000000,1.22080000000000,0.0874000000000000];
-[PL, FM] = bemta(mean_chord, deg2rad(-theta_tr), taper, airfoil)
-
-function [PL, FM] = bemta(c, theta_tw, taper, airfoil)
-% CBEMT with Tip Loss for Intermeshcase (IMC)
-% Sylvester Ashok
-% Edits by Chris Butterfield
-
-% IMC Data
-W = 600*2.20462/2; % lbs
-R = 1.3*3.28; % ft
-A = pi*R^2; % ft2
-
-root_cutoff = 0.1;
-VT = 680;
-omega = VT/R;
-
-% rpm = 395;
-% % omega = 450*2*pi/60; % rad/sec
-% VT = omega*R; % Tip speed ft/sec
-
-aoa = deg2rad(airfoil(2:end, 1)); %Angle of Attack
-Cl = airfoil(2:end, 2); %Coefficient of Lift
-Cd = airfoil(2:end, 3); %Coefficient of Drag
-
-% c = 1.1; % mean chord ft
-Nb = 2; %4 blades
-% sigma = Nb*c*R/A; % solidity
-
-rho = 0.00176; % slugs/ft3
-theta_0 = deg2rad(10); % initial collective
-% theta_tw = deg2rad(-5); %2 per foot
-% taper = .5; %tip is 70% of root
-
-a = polyfit(aoa(aoa<10 & aoa>-10), Cl(aoa<10 & aoa>-10), 1); % lift curve slope.
-a = a(1);
-
-CLmax = max(Cl);
-% CD0 = 0.008; % avg drag coeff
-
-% blade sections
-n = 100; % 100 blade elements
-r = linspace(R/n,R,n+1); % r value
-dr = R/n;
-m = n*root_cutoff; % number of root cut off sections to ignore
-c = linspace(c*2/(1+taper),taper*c,n+1); % sectional chord
-
-% additional loop for trimming collective pitch
-o = 30; % number of increments  
-T = zeros(o, 1);
-P = zeros(o, 1);
-Q = zeros(o, 1);
-theta_0(1) = theta_0;
-
-for k = 1:o
+    % rotor.t: Rotor Blade Twist
+    % rotor.R: Rotor Blade Radius (float)
+    % rotor.c: Rotor Blade Mean Chord (float)
+    % rotor.tr: Rotor Blade Taper Ratio (float)
+    % rotor.OR: Rotor Blade Tip Speed (Omega*R) (float)
+    % rotor.n: Number of blades (float)
+    % rotor.power_loss: Power loss multiplier (float)
+    % rotor.thrust_loss: Thrust loss multiplier (float)
+    % rotor.download: Download Efficiency (0 < download < 1) (float)
     
-    % initializing vectors
-    lambda = zeros(1, n);
-    F = ones(n,1);
-    v = zeros(n,1);
-    U = zeros(n,1);
-    dL = zeros(n,1);
-    dD = zeros(n,1);
-    alpha = zeros(n,1);
-    theta = zeros(n,1);
-    phi = zeros(n,1);
-    dQ = zeros(n,1);
-    dT = zeros(n,1);
+    % thr: Rotor Blade Root Incidence Angle (float)
+    % h: Altitude (either 3000 or 0) (float)
+    % climb: Rate of climb ft/s
+    % airfoil: Airfoil Data Excel Sheet (char)
     
-    % Loop 1 for Blade Elements
-    for i = m:n
-        j = 1;
-        l(1) = 0;
-        theta(i) = theta_0(k) + theta_tw*(r(i)/R);
-        
-        %Loop 2 for Tip Loss
-        while (true)
-            j = j+1;
-            
-            sigma_r = Nb*c(i)/(2*pi*r(i));
-            l(j) = sigma_r*a/16/F(i)*(sqrt(1+32*F(i)/sigma_r/a*theta(i)*r(i)/R)-1);
-            f = Nb/2*(1-r(i)/R)/l(j);
-            F(i) = 2/pi*acos(exp(-f));
-            if abs(l(j)-l(j-1))/l(j-1) <= 0.01
-                lambda(i) = l(j);
-                l = 0;
-                break
-            end
-        end
-        
-        % Blade Element Calculations
-        v(i) = lambda(i)*VT;
-        phi(i) = atan(v(i)/(omega*r(i)));
-        alpha(i) = theta(i) - phi(i);
-        % stall check
-        
-        CL = interp1(aoa, Cl, alpha(i)); %Coefficient of Lift Lookup;
-        if isnan(CL)
-            CL = CLmax - a*(alpha(i)-deg2rad(12));
-            CD = .008;
-           
-        else
-            CD = interp1(aoa, Cd, alpha(i)); %Coefficient of Lift Lookup;
-        end
-        
-        U(i)= sqrt((omega*r(i))^2 + v(i)^2);
-        dL(i) = 0.5*rho*U(i)^2*dr*c(i)*CL;
-        dD(i) = 0.5*rho*U(i)^2*dr*c(i)*CD;
-        dT(i) = Nb*(dL(i)*cos(phi(i)) - dD(i)*sin(phi(i)));
-        dQ(i) = Nb*r(i)*(dL(i)*sin(phi(i)) + dD(i)*cos(phi(i)));
+    t = rotor.t;
+    R = rotor.R;
+    c = rotor.c;
+    tr = rotor.tr;
+    OR = rotor.OR; 
+    n = rotor.n;
+    
+    % Density
+    rho = density(h);
+
+    %%Geometry Calculations for Both Rotors
+    % Retrieve Airfoil Data
+    aoa = airfoil(2:end, 1); %Angle of Attack
+    Cl = airfoil(2:end, 2); %Coefficient of Lift
+    Cd = airfoil(2:end, 3); %Coefficient of Drag
+
+    % Lift/Curve Slope Regression
+    a = polyfit(aoa(aoa<10 & aoa>-10), Cl(aoa<10 & aoa>-10), 1); % lift curve slope.
+    Cla = a(1)*180/pi; %Lift/Curve Slope
+
+    rp = .01 : .01 : 1; % Radius Proportion
+    ru = R * rp; % Radius in Desired Units
+
+    cr = 2 * c / (tr + 1); % Chord at Root
+    ct = cr * tr; % Chord at Tip
+    c = cr - (cr - ct) * rp; % Chord along Span
+
+    tht = thr - t; % Tip Incidence Angle
+    th = linspace(thr,tht,100);
+
+    % Calculation of Elemental Reference Area
+    dA = zeros(1, 100);
+    dA(1) = .5 * (cr + c(1)) * .01 * R;
+    for i = 1 : length(c) - 1
+        dA(i+1) = .5 * (c(i) + c(i+1)) *.01 * R;
     end
-   
-    T(k) = sum(dT)*cosd(13);
-    Q(k) = sum(dQ);
-    P(k) = Q(k)*omega/550;
+
+    % Calculation of Elemental Disk Area
+    dDA = zeros(1,100);
+    dDA(1) = pi * ru(1)^2;
+    for i = 1 : length(ru) - 1
+        dDA(i+1) = pi * (ru(i+1)^2 - ru(i)^2);
+    end
+    DA = sum(dDA);
+
+    sigma = dA ./ dDA; % Elemental Solidity
+
+    % Change of Reference Radius for Center of Element
+    rp = rp - .005;
+    ru = ru - .005 * R;
+
+    omega = OR / R; %Angular Velocity
+    Or = omega * ru;
     
-    theta_0(k+1) = theta_0(k) + deg2rad(0.5);
+    lamc = ones(1, 100) .* climb ./ OR; % Nondimensional Climb Velocity
+    lam = ((sigma.*Cla./16 - lamc./2).^2 + sigma.*Cla./8. ...
+    .*(th*pi/180).*rp).^.5 - (sigma.*Cla./16 - lamc./2); % Nondimensional Inflow Velocity
+    lami = lam - lamc; % Nondimensional Induced Velocity
+    vi = lami .* OR; % Induced Velocity
+
+    phi = atand(vi ./ Or); % Angle of Incoming Fluid
+    alpha = th - phi; % Angle of Attack
+
+    Clr = interp1(aoa, Cl, alpha); % Coefficient of Lift Lookup
+    Cdr = interp1(aoa, Cd, alpha); % Coefficient of Drag Lookup
+
+    % Accounts for Extrapolated Data
+    for i = 1 : length(Clr)
+       if isnan(Clr(i))
+           Clr(i) = 0;
+       end
+       if isnan(Cdr(i))
+           Cdr(i) = 0;
+       end
+    end
+
+    %% Rotor Performance Calculations
+    Vinf = sqrt(Or .^2 + vi .^2); % Incoming Flow Velocity
+    dL = .5 .* Vinf .^2 .* Clr .* rho .* dA; % Elemental Lift
+    dD = .5 .* Vinf .^2 .* Cdr .* rho .* dA; % Elemental Drag
+
+    dT = dL .* cosd(phi) - dD .* sind(phi); % Elemental Thrust
+    dPi = ru .* dL .* sind(phi) .* omega; % Elemental Induced Power
+    dPo = ru .* dD .* cosd(phi) .* omega; % Elemental Profile Power
+
+    Pi = n*sum(dPi)/550; % Induced Power
+    Po = n*sum(dPo)/550; % Profile Power
+    P = 1.15*Pi*rotor.power_loss/rotor.download + Po; % Total Power with losses
+
+    T = sum(dT)*n*rotor.thrust_loss; % Total Intermeshing Thrust
+    P_sl = P*density(0)/rho; % Power required at sea level
+    FM = Pi / P; % Figure of Merit
 end
 
-intermesh_loss = 1.1;
-CP = P.*550./(rho*A*VT^3)*intermesh_loss;
-CT = T./(rho*A*VT^2);
-FM = CT.*sqrt(CT./2)./CP;
-
-
-
-CT_o = W/(rho*A*VT^2);
-FM = interp1(CT, FM, CT_o); %Coefficient of Lift Lookup;
-CP_o = interp1(CT, CP, CT_o); %Coefficient of Lift Lookup;
-PL = CT_o/CP_o;
-
-if isnan(PL)
-    PL = 0;
-end
-
-end
-
-% figure(2)
-% plot(r(m:n)./R, dT(m:n))
-% xlabel ('nondimensional radius')
-% ylabel ('dT')
-% figure(3)
-% plot(r(m:n)./R, dQ(m:n))
-% xlabel ('nondimensional radius')
-% ylabel ('dQ')
-% figure(4)
-% plot(r(m:n)./R, lambda(m:n))
-% xlabel ('nondimensional radius')
-% ylabel ('lambda')
-% figure (1)
-% plot(CP,CT)
-% xlabel ('CP')
-% ylabel ('CT')
-% figure (2)
-% plot(CT,FM)
-% xlabel ('CT')
-% ylabel ('FM')
 
 
 
