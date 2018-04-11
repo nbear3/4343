@@ -6,7 +6,7 @@ c = 1.61;
 theta_t = 5.05;
 tr = 0.44;
 
-T_req = 144.16; 
+T_req = 155.98/2; % per rotor
 h = 3000*3.28;
 
 internmesh.OR = 650;
@@ -27,7 +27,7 @@ thr = theta_t;
 T = 0;
 V_forward = 225; % ft/s
 
-while abs(T - T_req) > 1e-3 && thr < 25
+while abs(T - T_req) > 1e-3
     [T, P, P_sl, FM] = bemt(internmesh, thr, h, V_forward, airfoil);
     thr = thr + 1/(1+exp((T-T_req)/T_req))-.5;
 end
@@ -35,3 +35,5 @@ end
 sigma = internmesh.n*internmesh.c/(pi*internmesh.R); 
 CT_over_CQ = T/(P*550)*internmesh.OR; % CT/CQ
 BL = T/(density(0)*pi*internmesh.R^2*internmesh.OR^2)/sigma; % Blade Loading at 0 m
+
+Total_P_req = 2*P_sl;
