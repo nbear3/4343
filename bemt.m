@@ -75,10 +75,10 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     lamc = ones(1, 100) .* climb ./ OR; % Nondimensional Climb Velocity
     lam = ((sigma.*Cla./16 - lamc./2).^2 + sigma.*Cla./8. ...
     .*(th*pi/180).*rp).^.5 - (sigma.*Cla./16 - lamc./2); % Nondimensional Inflow Velocity
-    lami = lam - lamc; % Nondimensional Induced Velocity
-    vi = lami .* OR; % Induced Velocity
+%     lami = lam - lamc; % Nondimensional Induced Velocity
+    v = lam .* OR; % Induced Velocity
 
-    phi = atand(vi ./ Or); % Angle of Incoming Fluid
+    phi = atand(v ./ Or); % Angle of Incoming Fluid
     alpha = th - phi; % Angle of Attack
 
     Clr = interp1(aoa, Cl, alpha); % Coefficient of Lift Lookup
@@ -95,7 +95,7 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     end
 
     %% Rotor Performance Calculations
-    Vinf = sqrt(Or .^2 + vi .^2); % Incoming Flow Velocity
+    Vinf = sqrt(Or .^2 + v .^2); % Incoming Flow Velocity
     dL = .5 .* Vinf .^2 .* Clr .* rho .* dA; % Elemental Lift
     dD = .5 .* Vinf .^2 .* Cdr .* rho .* dA; % Elemental Drag
 
