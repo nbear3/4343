@@ -1,10 +1,10 @@
 function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
 
-    sn = 10000; % number of sections
+    sn = 100; % number of sections
 
-    %Thrust: Total Thrust Produced
-    %Power: Total Power Required
-    %FM: Figure of Merit
+    % Thrust: Total Thrust Produced
+    % Power: Total Power Required
+    % FM: Figure of Merit
 
     % rotor.t: Rotor Blade Twist
     % rotor.R: Rotor Blade Radius (float)
@@ -19,7 +19,11 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     % thr: Rotor Blade Root Incidence Angle (float)
     % h: Altitude (either 3000 or 0) (float)
     % climb: Rate of climb ft/s
-    % airfoil: Airfoil Data Excel Sheet (char)
+    
+    % airfoil: Airfoil data (struct)
+    % airfoil.root: Data for the root airfoil
+    % airfoil.tip: Data for the tip airfoil
+    % airfoil.ratio: Percent of blade to switch to tip airfoil
     
     t = rotor.t;
     R = rotor.R;
@@ -31,42 +35,41 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     % Density
     rho = density(h);
 
-    %%Geometry Calculations for Both Rotors
-    % Retrieve Airfoil Data
-    aoa = airfoil(2:end, 1); %Angle of Attack
-    Cl = airfoil(2:end, 2); %Coefficient of Lift
-    Cd = airfoil(2:end, 3); %Coefficient of Drag
+    %% Retrieve Airfoil Data
+    af_cutoff = round(sn*airfoil.ratio);
+    
+    % Root
+    root.aoa = airfoil.root(:, 1); %Angle of Attack
+    root.Cl = airfoil.root(:, 2); %Coefficient of Lift
+    root.Cd = airfoil.root(:, 3); %Coefficient of Drag
+    root.index = 1:af_cutoff-1;
+    
+    % Tip
+    tip.aoa = airfoil.tip(:, 1); 
+    tip.Cl = airfoil.tip(:, 2);
+    tip.Cd = airfoil.tip(:, 3); 
+    tip.index = af_cutoff:sn;
+    
+    Cla = ones(1, sn);
+    for af = [root tip]
+        i = af.aoa<5 & af.aoa>-5;
+        a = polyfit(af.aoa(i), af.Cl(i), 1); % lift curve slope.
+        Cla(af.index) = a(1)*180/pi; %Lift/Curve Slope
+    end
 
-    % Lift/Curve Slope Regression
-    a = polyfit(aoa(aoa<10 & aoa>-10), Cl(aoa<10 & aoa>-10), 1); % lift curve slope.
-    Cla = a(1)*180/pi; %Lift/Curve Slope
-
+    %% Geometry Calculations
     rp = linspace(1/sn, 1, sn); % Radius Proportion
     ru = R * rp; % Radius in Desired Units
-
+    
     cr = 2 * c / (tr + 1); % Chord at Root
     ct = cr * tr; % Chord at Tip
     c = cr - (cr - ct) * rp; % Chord along Span
 
-    tht = thr - t; % Tip Incidence Angle
+    tht = thr - t; % Tip Pitch Angle
     th = linspace(thr,tht, sn);
 
-    % Calculation of Elemental Reference Area
-    dA = zeros(1, sn);
-    dA(1) = .5 * (cr + c(1)) * 1/sn * R;
-    for i = 1 : length(c) - 1
-        dA(i+1) = .5 * (c(i) + c(i+1)) * 1/sn * R;
-    end
-
-    % Calculation of Elemental Disk Area
-    dDA = zeros(1, sn);
-    dDA(1) = pi * ru(1)^2;
-    for i = 1 : length(ru) - 1
-        dDA(i+1) = pi * (ru(i+1)^2 - ru(i)^2);
-    end
-    DA = sum(dDA);
-
-    sigma = dA ./ dDA; % Elemental Solidity
+    dA = c*R/sn;
+    sigma = n*c./(2*pi*ru); % Elemental Solidity
 
     % Change of Reference Radius for Center of Element
     rp = rp - .5/sn;
@@ -75,26 +78,26 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     omega = OR / R; %Angular Velocity
     Or = omega * ru;
     
-    lamc = ones(1, sn) .* climb ./ OR; % Nondimensional Climb Velocity
-    lam = ((sigma.*Cla./16 - lamc./2).^2 + sigma.*Cla./8. ...
-    .*(th*pi/180).*rp).^.5 - (sigma.*Cla./16 - lamc./2); % Nondimensional Inflow Velocity
-    v = lam .* OR; % Induced Velocity
+    lamc = climb/OR; % Nondimensional Climb Velocity
+    lam = sqrt((sigma.*Cla/16-lamc/2).^2+sigma.*Cla/8.*deg2rad(th).*rp)-sigma.*Cla/16+lamc/2; % Nondimensional Inflow Velocity
+    v = lam*OR; % Induced Velocity
 
-    phi = atand(v ./ Or); % Angle of Incoming Fluid
+    phi = atand(v./Or); % Angle of Incoming Fluid
     alpha = th - phi; % Angle of Attack
 
-    Clr = interp1(aoa, Cl, alpha); % Coefficient of Lift Lookup
-    Cdr = interp1(aoa, Cd, alpha); % Coefficient of Drag Lookup
-
-    % Accounts for Extrapolated Data
-    for i = 1 : length(Clr)
-       if isnan(Clr(i))
-           Clr(i) = 0;
-       end
-       if isnan(Cdr(i))
-           Cdr(i) = 0;
-       end
+    % Coefficient of Lift Lookup
+    Clr = ones(1, sn);
+    Cdr = ones(1, sn);
+    for af = [root tip]
+        Clr(af.index) = interp1(af.aoa, af.Cl, alpha(af.index));
+        Cdr(af.index) = interp1(af.aoa, af.Cd, alpha(af.index));
+        
+        % Accounts for Extrapolated Data
+        [Cl_max, max_i] = max(af.Cl);
+        i = isnan(Clr);
+        Clr(i) = Cl_max-Cla(i).*deg2rad(alpha(i)-af.aoa(max_i));
     end
+    Cdr(isnan(Cdr)) = .2; % overestimate
 
     %% Rotor Performance Calculations
     Vinf = sqrt(Or .^2 + v .^2); % Incoming Flow Velocity
@@ -113,6 +116,9 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     P_sl = P*density(0)/rho; % Power required at sea level
     FM = Pi / P; % Figure of Merit
 end
+
+
+
 
 
 
