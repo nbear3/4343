@@ -2,7 +2,7 @@ clc
 clear
 close all
 
-c = 1;
+c = .6;
 theta_t = 10.1;
 tr = 0.9;
 
@@ -24,7 +24,7 @@ airfoils = load_airfoils;
 hold on
 for i = 1:length(airfoils)
     % Odd is tip; Even is root
-    airfoils(i).ratio = 0.5;
+    airfoils(i).ratio = 0.6;
     
     j = 1;
     for thr = theta_t:.1:25
