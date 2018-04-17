@@ -1,6 +1,6 @@
 function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
 
-    sn = 100; % number of sections
+    sn = 1000; % number of sections
 
     % Thrust: Total Thrust Produced
     % Power: Total Power Required
