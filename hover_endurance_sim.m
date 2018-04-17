@@ -61,5 +61,6 @@ end
 F_left = (Rf_avail - Rf_50)*GW;
 [~, P_req, ~] = thrust_bemt(W/2, epsilon, rotor, h, V, airfoil, max_thr);
 t = t + F_left/(2*P_req)/sfc*3600;
-fprintf('Intermesh Hover Time @ 50%% Fuel:   %.2f hr\n', t/3600);
-
+h = floor(t/3600);
+m = floor(mod(t, 3600)/60);
+fprintf('Intermesh Hover Time @ 50%% Fuel:   %d hr %d min\n', h, m);
