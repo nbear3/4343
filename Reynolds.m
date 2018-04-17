@@ -1,8 +1,8 @@
 %p = [0.00238, 0.00176420];
 p = 0.00238; % density (slugs/ft^3)
-c = 0.8; % chord in ft
+c = 0.79; % chord in ft
 R = 4.26; % R in ft
-tr = 0.44; % taper ratio
+tr = 0.47; % taper ratio
 
 sn = 100;
 rp = linspace(1/sn, 1, sn); % Radius Proportion
