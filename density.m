@@ -1,6 +1,8 @@
 function rho = density(h)
-    % Calculate Desnity
-    % h: feet
-    % return: rho in slugs/ft3
-    rho = .00238*(1-.00198*h/288.16)^4.2553;
-end
+    % Returns density (rho) at a given altitude (h)
+    % rho: desnity in kg/m3
+    % h: altitude in m
+    % From https://www.grc.nasa.gov/www/k-12/airplane/atmosmet.html
+    
+%     rho = 101.29/.2869*(288.14-.00649*h)^4.256/288.08^5.256;
+    rho = 2116/1718*(518.7-.00356*h)^4.256/518.6^5.256;

@@ -1,0 +1,8 @@
+% Run after hover_endurance_sim.m
+clc
+
+plot(t_ref/60, P_ref) 
+xlabel('Time (min)')
+ylabel('Power Required (HP)')
+title('Power Required During Hover Endurance Test @ SL')
+fprintf('Intermesh Hover Time @ 50%% Fuel:   %.2f hr\n', t/3600);
