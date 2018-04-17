@@ -2,14 +2,14 @@ clc
 clearvars -except airfoil
 close all
 
-c = 1.61;
-theta_t = 5.05;
-tr = 0.44;
+c = 0.79;
+theta_t = 5;
+tr = .47;
 
 T_req = 155.98/2; % per rotor
-h = 3000*3.28;
+h = 3000*3.28084;
 
-internmesh.OR = 700;
+internmesh.OR = 650;
 internmesh.t = theta_t;
 internmesh.R = 1.3*3.28;
 internmesh.c = c;
