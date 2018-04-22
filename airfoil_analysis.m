@@ -2,12 +2,12 @@ clc
 clear
 close all
 
-c = .79;
-theta_t = 5.08;
+c = .8;
+theta_t = 5;
 tr = 0.47;
 
 W = 600*2.20462;
-h = 3000*3.28084;
+h = 1*3000*3.28084;
 
 intmesh.OR = 650;
 intmesh.t = theta_t;
@@ -43,9 +43,9 @@ ylabel('C_T/C_Q')
 x = [W/2.20462 W/2.20462];
 plot(x, ylim, '--')
 plot(1.5*x, ylim, '--')
-legend('Naca63-210 (R) & Naca23012 (T)', 'Naca 23012 (R&T)','Naca23012 (R) & VR-1 (T)', 'Naca23012 (R) & VR-1 (T)', 'RC0864C (R) & Naca23012 (T)', 'W', '1.5W')
-title('CT over CQ for Common Airfoil Combinations in Hover at 3000 m')
-%title('CT over CQ for Common Airfoil Combinations in Hover at Sea Level')
+legend('Naca63-210 (R) & Naca23012 (T)', 'Naca 23012 (R&T)','Naca63-210 (R) & VR-1 (T)', 'Naca23012 (R) & VR-1 (T)', 'RC0864C (R) & Naca23012 (T)', 'W', '1.5W')
+%title('CT over CQ for Common Airfoil Combinations in Hover at 3000 m')
+title('CT over CQ for Common Airfoil Combinations in Hover at Sea Level')
 set(findall(gca, 'Type', 'Line'),'LineWidth',1);
 
 
