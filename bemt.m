@@ -79,7 +79,7 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     Or = omega * ru;
     
     lamc = climb/OR; % Nondimensional Climb Velocity
-    lam = sqrt((sigma.*Cla/16-lamc/2).^2+sigma.*Cla/8.*deg2rad(th).*rp)-sigma.*Cla/16+lamc/2; % Nondimensional Inflow Velocity
+    lam = sqrt((sigma.*Cla/16-lamc/2).^2+sigma.*Cla/8.*deg2rad(th).*rp)-(sigma.*Cla/16-lamc/2); % Nondimensional Inflow Velocity
     v = lam*OR; % Induced Velocity
 
     phi = atand(v./Or); % Angle of Incoming Fluid
@@ -93,9 +93,10 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
         Cdr(af.index) = interp1(af.aoa, af.Cd, alpha(af.index));
         
         % Accounts for Extrapolated Data
-        [Cl_max, max_i] = max(af.Cl);
-        i = isnan(Clr);
-        Clr(i) = Cl_max-Cla(i).*deg2rad(alpha(i)-af.aoa(max_i));
+        Clr(isnan(Clr)) = 0;
+%         [Cl_max, max_i] = max(af.Cl);
+%         i = isnan(Clr);
+%         Clr(i) = Cl_max-Cla(i).*deg2rad(alpha(i)-af.aoa(max_i));
     end
     Cdr(isnan(Cdr)) = .2; % overestimate
 
@@ -116,15 +117,3 @@ function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
     P_sl = P*density(0)/rho; % Power required at sea level
     FM = Pi / P; % Figure of Merit
 end
-
-
-
-
-
-
-
-
-
-
-
-
