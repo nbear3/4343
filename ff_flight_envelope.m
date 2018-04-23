@@ -34,6 +34,7 @@ for n = 1:length(h)
 
     [R, V_range, P_range] = ff_range(V_kts, P_req);
     fprintf('\nBest Range @ %d m\n', h(n));
+    fprintf('\tTotal Range: %.2f km\n', R);
     fprintf('\t50%% Range: %.2f km\n', R/2);
     fprintf('\t@V: %.2f kts\n', V_range);
     fprintf('\t@P: %.2f HP\n', P_range);

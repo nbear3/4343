@@ -5,7 +5,7 @@ close all
 c = .8;
 theta_t = 5;
 tr = .47;
-h = 3000*3.28084; % ft
+h = 0*3000*3.28084; % ft
 
 intmesh.OR = 650;
 intmesh.t = theta_t;
@@ -34,4 +34,4 @@ CT_over_CQ = T_req/(P*550)*intmesh.OR; % CT/CQ
 Ct = T_req/(density(h)*pi*intmesh.R^2*intmesh.OR^2);
 P_momentum = 2*Ct*sqrt(Ct/2)*(density(h)*pi*intmesh.R^2*intmesh.OR^3)/550/FM;
 
-Total_P_req = 2*P_sl;
+MCP_req = 2*P_sl;
