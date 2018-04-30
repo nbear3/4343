@@ -20,11 +20,12 @@ end
 
 
 figure (1)
-plot(V*0.592484, n)
+ylim([0,5])
+xlim([0, 250])
+plot(xlim, [3 3])
 hold on
-plot(xlim, [n_stall, n_stall], '--')
-plot([Vmax Vmax], ylim, '--')
 title('Flight Envelope')
 xlabel('V_{\infty} (kts)')
 ylabel('Load factor, n')
-legend('Stall Speed Limit', 'Load Factor Limit', 'Dynamic Pressure Limit', 'Location', 'NW')
+legend('Structural', 'Location', 'NW')
+
