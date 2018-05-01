@@ -1,4 +1,4 @@
-function [T, P, P_sl, FM] = bemt(rotor, thr, h, climb, airfoil)
+function [T, P, P_sl, FM, dT, ru] = bemt(rotor, thr, h, climb, airfoil)
 
     sn = 1000; % number of sections
 

@@ -9,7 +9,7 @@ h = 0*3000*3.28084;
 j = 1;
 V_climb = 0:5:100;
 for V = V_climb    
-    [~, P, ~] = thrust_bemt(W/2, 1e-3, intmesh, h, V, airfoil, 25);
+    [~, P, ~] = thrust_bemt(W/2, 1e-3, intmesh, h, V, airfoil, 30);
     P_req(j) = 2*P;
     j=j+1;
 end
