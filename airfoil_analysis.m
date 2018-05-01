@@ -2,23 +2,8 @@ clc
 clear
 close all
 
-c = .8;
-theta_t = 5;
-tr = 0.47;
-
-W = 600*2.20462;
-h = 1*3000*3.28084;
-
-intmesh.OR = 650;
-intmesh.t = theta_t;
-intmesh.R = 1.3*3.28;
-intmesh.c = c;
-intmesh.tr = tr;
-intmesh.n = 2;
-intmesh.thrust_loss = cosd(13);
-intmesh.power_loss = 1.1;
-intmesh.download = 0.9;
-
+h = 0*3000*3.28084;
+[W, intmesh, ~] = load_intmesh();
 airfoils = load_airfoils;
 
 hold on
@@ -27,7 +12,7 @@ for i = 1:length(airfoils)
     airfoils(i).ratio = 0.5;
     
     j = 1;
-    for thr = theta_t:.1:25
+    for thr = intmesh.t:.1:30
         [T(j), P, P_sl, FM] = bemt(intmesh, thr, h, 0, airfoils(i));
         CT_CQ(j) = T(j)/P/550*intmesh.OR;
         j=j+1;

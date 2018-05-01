@@ -5,10 +5,15 @@ function [W, intmesh, airfoil] = load_intmesh()
     
     % Rotor Properties in Hover
     intmesh.OR = 650;
-    intmesh.t = 5;
-    intmesh.R = 1.3*3.28;
-    intmesh.c = .8;
-    intmesh.tr = .47;
+    
+    intmesh.t = 17.3;
+    intmesh.R = 1.1*3.28;
+    intmesh.c = .7;
+    intmesh.tr = .89;
+%     intmesh.t = 5;
+%     intmesh.R = 1.3*3.28;
+%     intmesh.c = .8;
+%     intmesh.tr = .47;
     intmesh.n = 2;
     intmesh.thrust_loss = cosd(13);
     intmesh.power_loss = 1.1;

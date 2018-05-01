@@ -7,7 +7,7 @@ hold on
 
 h = 0;
 j = 1;
-for thr = 5:.1:18
+for thr = 20:.1:25
     [T(j), P, P_sl(j), FM] = bemt(intmesh, thr, h, 0, airfoil);
     j=j+1;
 end

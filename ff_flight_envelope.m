@@ -7,13 +7,13 @@ h = [0, 3000];
 fn.name = {'forward_flight.xlsx', 'forward_flight_alt.xlsx'};
 figure (1)
 
+[W, intmesh, airfoil] = load_intmesh();
+intmesh.thrust_loss = 1;
+intmesh.power_loss = 1;
+intmesh.download = .95;
+
 for n = 1:length(h)
     ff_data = xlsread(fn.name{n});
-    [W, intmesh, airfoil] = load_intmesh();
-    intmesh.thrust_loss = 1;
-    intmesh.power_loss = 1;
-    intmesh.download = .95;
-    
     h_ft = h(n)*3.28084; % convert to ft
     
     j = 1;
@@ -31,7 +31,10 @@ for n = 1:length(h)
 
     P_avail = 300*density(h_ft)/density(0);
     V_max = interp1(P_req, V_kts, P_avail);
-
+    fprintf('\nMaximum MCP Speed @ %d m\n', h(n));
+    fprintf('\tMax Speed: %.2f kts\n', V_max);
+    fprintf('\t@P: %.2f HP\n', P_avail);
+    
     [R, V_range, P_range] = ff_range(V_kts, P_req);
     fprintf('\nBest Range @ %d m\n', h(n));
     fprintf('\tTotal Range: %.2f km\n', R);
