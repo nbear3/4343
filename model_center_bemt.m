@@ -12,7 +12,7 @@ W = 600*2.20462;
 % Rotor Properties in Hover
 intmesh.OR = 650;
 intmesh.t = theta_t;
-intmesh.R = 1.3*3.28084;
+intmesh.R = 1.1*3.28084;
 intmesh.c = c;
 intmesh.tr = tr;
 intmesh.n = 2;
