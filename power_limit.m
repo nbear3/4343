@@ -1,8 +1,6 @@
-function [Vkts, n] = power_limit()
+function [Vkts, n] = power_limit(h)
 
 Vinf = linspace(0, 360);
-
-h = 0*3000*3.28; % in ft
 rho_sl = density(0); %slugs/ft^3
 rho = density(h);
 sigmad = rho/rho_sl; %density ratio of air
