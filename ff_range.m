@@ -1,5 +1,5 @@
 function [R, V_range, P_range] = ff_range(V_kts, P_req)
-    y = P_req./V_kts';
+    y = P_req./V_kts;
     [~, i] = min(y);
     fun = @(x) spline(V_kts, y, x);
     V_range = fminsearch(fun, V_kts(i)); % km/hr
