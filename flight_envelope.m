@@ -34,14 +34,14 @@ plot(xlim, n_power_hover*ones(1, 2), '--')
 plot(xlim, [n_rotor n_rotor], '--')
 plot(xlim, [3 3], '--')
 
-i1 = find(n_aero > n_power_hover, 1);
-plot([0 V(i1)], n_power_hover*ones(1, 2), 'k', 'LineWidth', 1.5)
-
-i2 = find(n_aero > 3, 1);
-plot(V(i1:i2), n_aero(i1:i2), 'k', 'LineWidth', 1.5)
+% i1 = find(n_aero > n_power_hover, 1);
+% plot([0 V(i1)], n_power_hover*ones(1, 2), 'k', 'LineWidth', 1.5)
+% 
+% i2 = find(n_aero > 3, 1);
+% plot(V(i1:i2), n_aero(i1:i2), 'k', 'LineWidth', 1.5)
 
 title('Flight Envelope')
-xlabel('V_{\infty} (kts)')
+xlabel('Speed (kts)')
 ylabel('Load factor, n')
-% legend('Structural', 'Location', 'NW')
+legend('Aero (Wing)', 'Power (Compound)', 'Power (Hover)', 'Rotor Stall', 'Structural', 'Location', 'NW')
 
