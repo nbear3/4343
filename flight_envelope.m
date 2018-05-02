@@ -12,36 +12,36 @@ V = linspace(0, 150/.592484, 500);
 L = .5*Cl_max*rho*V.^2*S;
 n_aero = L/W;
 
-V = V*.592484;
-
-
+Vkts = V*.592484;
 [W, intmesh, airfoil] = load_intmesh();
-h = 0;
+p = 0;
 j = 1;
-for thr = 25:.5:36
-    [T(j), P(j), ~, ~] = bemt(intmesh, thr, h, 0, airfoil);
+for thr = 30:.5:36
+    [T(j), P(j), ~, ~] = bemt(intmesh, thr, p, 0, airfoil);
     j=j+1;
 end
 
-[Vkts, n_power] = power_limit();
-n_power_hover = 2*interp1(P, T, 280/2)/W;
-n_rotor = 2*max(T)/W;
+[Vkts_power, n_power] = power_limit();
+n_rotor = 2*max(T)/W; 
 
+%% Plots
 hold on
-plot(V, n_aero, '--');
-plot(Vkts, n_power, '--')
-plot(xlim, n_power_hover*ones(1, 2), '--')
-plot(xlim, [n_rotor n_rotor], '--')
-plot(xlim, [3 3], '--')
+p(1) = plot(Vkts_power, n_power, 'r'); % power limit
 
-% i1 = find(n_aero > n_power_hover, 1);
-% plot([0 V(i1)], n_power_hover*ones(1, 2), 'k', 'LineWidth', 1.5)
-% 
-% i2 = find(n_aero > 3, 1);
-% plot(V(i1:i2), n_aero(i1:i2), 'k', 'LineWidth', 1.5)
+xl = xlim;
+i = InterX([Vkts; n_aero], [[0 100]; [n_rotor n_rotor]]);
+p(2) = plot([xl(1) i(1)], [n_rotor n_rotor], 'g'); % rotor stall
+plot([i(1) xl(2)], [n_rotor n_rotor], 'g--')
+p(3) = plot(Vkts(Vkts >= i(1)), n_aero(Vkts >= i(1)), 'b'); % wing stall
+plot(Vkts(Vkts < i(1)), n_aero(Vkts < i(1)), 'b--')
+
+p(4) = plot(xlim, [4.4 4.4], 'k'); % typical utility category airplane
+i = InterX([Vkts; n_aero], [[0 200]; [2.5 2.5]]);
+p(5) = plot([xl(1) i(1)], [2.5 2.5], 'c'); % structural for rotor
+plot([i(1) xl(2)], [2.5 2.5], 'c--')
+set(findall(gca, 'Type', 'Line'),'LineWidth',1);
 
 title('Flight Envelope')
 xlabel('Speed (kts)')
 ylabel('Load factor, n')
-legend('Aero (Wing)', 'Power (Compound)', 'Power (Hover)', 'Rotor Stall', 'Structural', 'Location', 'NW')
-
+legend(p, 'Power',  'Aero (Rotor)', 'Aero (Wing)', 'Structure (Rotor)', 'Structure Wing', 'Location', 'NW')

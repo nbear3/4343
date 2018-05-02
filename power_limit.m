@@ -1,6 +1,6 @@
 function [Vkts, n] = power_limit()
 
-Vinf = linspace(0, 380);
+Vinf = linspace(0, 360);
 
 h = 0*3000*3.28; % in ft
 rho_sl = density(0); %slugs/ft^3

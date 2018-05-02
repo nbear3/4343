@@ -1,4 +1,13 @@
-function [Vkts, THP] = compound_power(h)
+function [Vkts, THP, THP_1, THP_2, THP_3] = compound_power(h)
+    % Given height h in feet
+    %
+    % Return:
+    %   Vkts: speed in knots
+    %   THP: Total Horse Power
+    %   THP_1: Parasite Power
+    %   THP_2: Shared Transition Power
+    %   THP_3: Induced + Profile power
+    
     % Gross Weight
     W = 600*2.20462;
     rho_sl = density(0); %slugs/ft^3
@@ -7,7 +16,7 @@ function [Vkts, THP] = compound_power(h)
 
     %% Compound Helicopter Equations
     e = 0.8; % Oswald's Efficiency Factor
-    V = linspace(0, 380); % in ft/s
+    V = linspace(0, 360); % in ft/s
 
     S = 5.884*(3.28084)^2;
     Cl_max = 1.45298;
