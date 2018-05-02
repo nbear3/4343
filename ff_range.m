@@ -1,10 +1,9 @@
 function [R, V_range, P_range] = ff_range(V_kts, P_req)
     y = P_req./V_kts;
     [~, i] = min(y);
-    fun = @(x) spline(V_kts, y, x);
-    V_range = fminsearch(fun, V_kts(i)); % km/hr
 
-    P_range = interp1(V_kts, P_req, V_range);
+    V_range = V_kts(i); % km/hr
+    P_range = P_req(i);
 
     % Parameters
     GW = 600*2.2046;
